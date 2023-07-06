@@ -99,11 +99,13 @@ function Argument(option) {
         function ptnArray(ptn, obj, args) {
             if(ptn.length === 0 && obj.length === 0) {
                 return args;
+            } else if(ptn.length === 0) {
+                return null;
             } else if(ptn[0][REPEAT]) {
                 return ptn[0](obj, args, ptn.slice(1));
             } else if(ptn[0][OPT]) {
                 return ptn[0](obj, args, ptn.slice(1), "array");
-            } else if(ptn.length === 0 || obj.length === 0) {
+            } else if(obj.length === 0) {
                 return null;
             } else if(typeof ptn[0] === "function") {
                 const argsNew = ptn[0](obj[0], args);

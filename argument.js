@@ -5,6 +5,7 @@ function Argument(option) {
     const undef = void 0;
     const REPEAT = Symbol("REPEAT");
     const OPT = Symbol("OPT");
+    const END = Symbol("END");
 
     const optattr = option ?? {};
     const defaultAction = optattr.defaultAction ?? (() => error("Not Matched"));
@@ -102,6 +103,8 @@ function Argument(option) {
                 return ptn[0](obj, args, ptn.slice(1));
             } else if(ptn[0][OPT]) {
                 return ptn[0](obj, args, ptn.slice(1), "array");
+            } else if(ptn.length === 0 || obj.length === 0) {
+                return null;
             } else if(typeof ptn[0] === "function") {
                 const argsNew = ptn[0](obj[0], args);
 
@@ -157,7 +160,7 @@ function Argument(option) {
         function exec(ptn, obj) {
             const args = matchPattern(ptn.pattern, obj, []);
 
-            return args === null ? undef : ptn.f(...args);
+            return args === null ? END : ptn.f(...args);
         }
 
         function inner(ptn) {
@@ -168,7 +171,7 @@ function Argument(option) {
                           ? defaultAction()
                           : exec(ptn[0], obj);
 
-                return r === undef ? inner(ptn.slice(1))(...obj) : r;
+                return r === END ? inner(ptn.slice(1))(...obj) : r;
             }
         }
 

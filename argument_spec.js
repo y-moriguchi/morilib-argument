@@ -49,7 +49,7 @@ describe("morilib-pattern", function() {
         it("object", () => {
             const f1 = P.pattern([
             {
-                pattern: [P.matchObject({ aaaa: P.pred(0, P.type("number")), bbbb: P.opt(1, P.type("number"), -1) })],
+                pattern: [{ aaaa: P.pred(0, P.type("number")), bbbb: P.opt(1, P.type("number"), -1) }],
                 f: (x, y) => x + y
             }]);
 

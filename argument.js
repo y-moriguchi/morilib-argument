@@ -6,7 +6,8 @@ function Argument(option) {
     const REPEAT = Symbol("REPEAT");
     const OPT = Symbol("OPT");
 
-    const optattr = option ?? { defaultAction: () => error("Not Matched") };
+    const optattr = option ?? {};
+    const defaultAction = optattr.defaultAction ?? (() => error("Not Matched"));
 
     function error(msg) {
         throw new Error(msg);
@@ -89,8 +90,35 @@ function Argument(option) {
     }
 
     function matchObject(ptn) {
-        function ptnObject(obj, args) {
+
+        return ptnObject;
+    }
+
+    function matchPattern(ptn, obj, args) {
+        function ptnArray(ptn, obj, args) {
+            if(ptn.length === 0 && obj.length === 0) {
+                return args;
+            } else if(ptn[0][REPEAT]) {
+                return ptn[0](obj, args, ptn.slice(1));
+            } else if(ptn[0][OPT]) {
+                return ptn[0](obj, args, ptn.slice(1), "array");
+            } else if(typeof ptn[0] === "function") {
+                const argsNew = ptn[0](obj[0], args);
+
+                return argsNew === null ? null : ptnArray(ptn.slice(1), obj.slice(1), argsNew);
+            } else if(typeof ptn[0] === "object" && ptn[0] !== null) {
+                return ptnObject(ptn[0], obj[0], args);
+            } else {
+                return ptn[0] === obj[0] ? ptnArray(ptn.slice(1), obj.slice(1), args) : null;
+            }
+        }
+
+        function ptnObject(ptn, obj, args) {
             let argsNew = args;
+
+            if(typeof obj !== "object" || obj === null) {
+                return null;
+            }
 
             for(const key of Object.keys(ptn)) {
                 if(obj[key] === undef) {
@@ -109,26 +137,6 @@ function Argument(option) {
                 }
             }
             return argsNew;
-        }
-
-        return ptnObject;
-    }
-
-    function matchPattern(ptn, obj, args) {
-        function ptnArray(ptn, obj, args) {
-            if(ptn.length === 0 && obj.length === 0) {
-                return args;
-            } else if(typeof ptn[0] !== "function") {
-                return ptn[0] === obj[0] ? ptnArray(ptn.slice(1), obj.slice(1), args) : null;
-            } else if(ptn[0][REPEAT]) {
-                return ptn[0](obj, args, ptn.slice(1));
-            } else if(ptn[0][OPT]) {
-                return ptn[0](obj, args, ptn.slice(1), "array");
-            } else {
-                const argsNew = ptn[0](obj[0], args);
-
-                return argsNew === null ? null : ptnArray(ptn.slice(1), obj.slice(1), argsNew);
-            }
         }
 
         function dispatch(ptn, obj, args) {
@@ -157,7 +165,7 @@ function Argument(option) {
                 const r = !Array.isArray(ptn)
                           ? error("Patterns must be an array")
                           : ptn.length === 0
-                          ? optattr.defaultAction()
+                          ? defaultAction()
                           : exec(ptn[0], obj);
 
                 return r === undef ? inner(ptn.slice(1))(...obj) : r;
@@ -177,8 +185,7 @@ function Argument(option) {
         is: is,
         opt: opt,
         choice: choice,
-        repeat: repeat,
-        matchObject: matchObject
+        repeat: repeat
     };
 
     return me;

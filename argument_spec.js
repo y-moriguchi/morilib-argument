@@ -109,6 +109,18 @@ describe("morilib-pattern", function() {
             ok(f1(2, 3), -1);
             ok(f1(3), -3);
         });
+
+        it("cond", () => {
+            const f1 = P.pattern([
+            {
+                pattern: [P.pred(0, P.any), P.pred(1, P.any)],
+                cond: (x, y) => x + y === 27,
+                f: (x, y) => x - y
+            }]);
+
+            ok(f1(25, 2), 23);
+            expect(() => f1(2, 4)).toThrow();
+        });
     });
 });
 

@@ -90,11 +90,6 @@ function Argument(option) {
         return rule;
     }
 
-    function matchObject(ptn) {
-
-        return ptnObject;
-    }
-
     function matchPattern(ptn, obj, args) {
         function ptnArray(ptn, obj, args) {
             if(ptn.length === 0 && obj.length === 0) {
@@ -162,7 +157,7 @@ function Argument(option) {
         function exec(ptn, obj) {
             const args = matchPattern(ptn.pattern, obj, []);
 
-            return args === null ? END : ptn.f(...args);
+            return args === null ? END : (!ptn.cond || ptn.cond(...args)) ? ptn.f(...args) : END;
         }
 
         function inner(ptn) {

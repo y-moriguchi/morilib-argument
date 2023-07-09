@@ -30,6 +30,22 @@ function Argument(option) {
     };
 
     const pred = (index, pred) => (obj, args) => pred(obj) ? copySet(args, index, obj) : null;
+    const argsLength = (len, pred) => (obj, args) => {
+        if(!Array.isArray(obj) || obj.length !== len) {
+            return null;
+        } else {
+            const result = args.slice();
+
+            for(let i = 0; i < len; i++) {
+                if(!pred || pred(obj[i])) {
+                    result[i] = obj[i];
+                } else {
+                    return null;
+                }
+            }
+            return result;
+        }
+    };
 
     const opt = (index, pred, defvalue) => {
         function inner(obj, args, rest, type) {
@@ -57,7 +73,9 @@ function Argument(option) {
     const any = obj => true;
     const type = typeStr => obj => typeof obj === typeStr;
     const is = classe => obj => obj instanceof classe;
+    const isNot = classe => obj => !(obj instanceof classe);
     const empty = obj => Array.isArray(obj) && obj.length === 0;
+    const not = pred => obj => !pred(obj);
 
     const choice = (...ptns) => (obj, args) => ptns.length === 0 ? null : matchPattern(ptns[0], obj, args) ?? choice(...ptns.slice(1))(obj, args);
 
@@ -179,10 +197,13 @@ function Argument(option) {
         pattern: pattern,
         firstRest: firstRest,
         empty: empty,
+        argsLength: argsLength,
         pred: pred,
+        not: not,
         any: any,
         type: type,
         is: is,
+        isNot: isNot,
         opt: opt,
         choice: choice,
         repeat: repeat

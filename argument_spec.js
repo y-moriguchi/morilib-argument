@@ -46,6 +46,49 @@ describe("morilib-pattern", function() {
             expect(() => f1(1, 2)).toThrow();
         });
 
+        it("not1", () => {
+            const f1 = P.pattern([{
+                pattern: [P.pred(0, P.not(P.is(Array)))],
+                f: x => 1
+            }]);
+
+            ok(f1(26), 1);
+            expect(() => f1([1, 2])).toThrow();
+        });
+
+        it("not2", () => {
+            const f1 = P.pattern([{
+                pattern: [P.pred(0, P.isNot(Array))],
+                f: x => 1
+            }]);
+
+            ok(f1(26), 1);
+            expect(() => f1([1, 2])).toThrow();
+        });
+
+        it("argsLength1", () => {
+            const f1 = P.pattern([{
+                pattern: P.argsLength(2),
+                f: x => 1
+            }]);
+
+            ok(f1(1, 2), 1);
+            expect(() => f1(1, 2, 3)).toThrow();
+            expect(() => f1(1)).toThrow();
+        });
+
+        it("argsLength2", () => {
+            const f1 = P.pattern([{
+                pattern: P.argsLength(2, P.type("number")),
+                f: x => 1
+            }]);
+
+            ok(f1(1, 2), 1);
+            expect(() => f1(1, 2, 3)).toThrow();
+            expect(() => f1(1)).toThrow();
+            expect(() => f1(1, "2")).toThrow();
+        });
+
         it("object", () => {
             const f1 = P.pattern([
             {

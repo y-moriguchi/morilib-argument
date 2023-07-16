@@ -84,7 +84,7 @@ function Argument(option) {
             if(!Array.isArray(obj)) {
                 return null;
             } else if(obj.length === 0) {
-                return rest.length === 0 ? args : null;
+                return rest.length === 0 ? copySet(args, index, argsList) : null;
             } else if(pred(obj[0])) {
                 const result = inner(obj.slice(1), args, argsList.concat([obj[0]]), rest);
 
@@ -106,6 +106,28 @@ function Argument(option) {
 
         rule[REPEAT] = true;
         return rule;
+    }
+
+    function repeatNotBacktrack(index, pred) {
+        function inner(obj, args, rest) {
+            const result = [];
+            let i;
+
+            for(i = 0; i < obj.length; i++) {
+                if(pred(obj[i])) {
+                    result.push(obj[i]);
+                } else {
+                    break;
+                }
+            }
+
+            const argsRest = matchPattern(rest, obj.slice(i), args);
+
+            return argsRest === null ? null : copySet(argsRest, index, result); 
+        }
+
+        inner[REPEAT] = true;
+        return inner;
     }
 
     function matchPattern(ptn, obj, args) {
@@ -206,7 +228,8 @@ function Argument(option) {
         isNot: isNot,
         opt: opt,
         choice: choice,
-        repeat: repeat
+        repeat: repeat,
+        repeatNotBacktrack: repeatNotBacktrack
     };
 
     return me;
